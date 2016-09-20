@@ -924,6 +924,7 @@ void MainWindow::displayVector(int direction)
 void MainWindow::display_channels_scene()
 {
     int i;
+    int ch;
 
 
     channels_scene->clear();
@@ -935,13 +936,14 @@ void MainWindow::display_channels_scene()
     QBrush grayBrush(Qt::gray);
 
     line = channels_scene->addLine( 10, 0, 10, 329, outlinePen);
-    line = channels_scene->addLine( 215, 0, 215, 329, outlinePen);
+    line = channels_scene->addLine( 214, 0, 214, 329, outlinePen);
     line = channels_scene->addLine( 418, 0, 418, 329, outlinePen);
 
-
+    ch = 0;
     for (i=0; i<320; i+=29)
     {
-        rectangle = channels_scene->addRect( 10, i, rc_channels.at(rc_thrust) / 10, 10, outlinePen, grayBrush );
+        rectangle = channels_scene->addRect( 10, i, rc_channels.at(ch) / 10, 10, outlinePen, grayBrush );
+        ch++;
     }
 
     /*
@@ -975,8 +977,8 @@ void MainWindow::display_config_scene(int rotation)
     outlinePen.setWidth(2);
     QBrush grayBrush(Qt::gray);
     // Motor arms
-    rectangle = config_scene->addRect( 35, 70, 160, 15, outlinePen, grayBrush );
-    rectangle = config_scene->addRect( 35, 150, 160, 15, outlinePen, grayBrush );
+    rectangle = config_scene->addRect( 35, 68, 160, 15, outlinePen, grayBrush );
+    rectangle = config_scene->addRect( 35, 152, 160, 15, outlinePen, grayBrush );
     // chassis
     rectangle = config_scene->addRect( 95, 40, 40, 150, outlinePen, grayBrush );
 
