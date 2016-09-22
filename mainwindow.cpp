@@ -111,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // set some globally used variables
     settings_to_be_read = false;
     settings_to_be_write = false;
+    serial_to_be_closed = false;
     pulled = false;
     bytes_written = 0;
     rotational_direction = CW;
@@ -936,7 +937,7 @@ void MainWindow::display_channels_scene()
     QBrush grayBrush(Qt::gray);
 
     line = channels_scene->addLine( 10, 0, 10, 329, outlinePen);
-    line = channels_scene->addLine( 214, 0, 214, 329, outlinePen);
+    line = channels_scene->addLine( 215, 0, 215, 329, outlinePen);
     line = channels_scene->addLine( 418, 0, 418, 329, outlinePen);
 
     ch = 0;

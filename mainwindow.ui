@@ -101,6 +101,9 @@
            <property name="text">
             <string>Restart after Flashing</string>
            </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
         </layout>
@@ -423,7 +426,7 @@
         <x>10</x>
         <y>310</y>
         <width>531</width>
-        <height>341</height>
+        <height>348</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_12">
