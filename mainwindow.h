@@ -184,8 +184,8 @@ private:
     int8_t rotational_direction;
     int delay_counter;
     //uint8_t rc_rev[12];
-    rc_channel rc_func[13];
-    rc_channel rc_ch[13];
+    rc_channel rc_func[13] = { {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}, {11, 0}, {12, 0} };
+    rc_channel rc_ch[13] = { {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}, {11, 0}, {12, 0} };
 };
 
 #endif // MAINWINDOW_H

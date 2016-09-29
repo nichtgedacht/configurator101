@@ -132,10 +132,14 @@ MainWindow::MainWindow(QWidget *parent) :
     channels_to_be_read = false;
     settings_to_be_write = false;
     serial_to_be_closed = false;
+    found_our_port = false;
     pulled = false;
     bytes_written = 0;
     rotational_direction = CW;
     rc_channels << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
+
+
+
 
     // will be refreshed only if changed
     display_config_scene(CW);
