@@ -71,13 +71,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(timer, SIGNAL(timeout()), this, SLOT(timer_elapsed()));
     connect(serial, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(serialPortError(QSerialPort::SerialPortError)));
     connect( ui->fw_select_pushButton, SIGNAL( released() ), this, SLOT( browseFiles() ) );
+    connect( ui->fw_save_select_pushButton, SIGNAL( released() ), this, SLOT( browse_saveFile() ) );
     connect( ui->flash_pushButton, SIGNAL( released() ), this, SLOT( dfuFlashBinary() ) );
+    connect( ui->fw_save_pushButton, SIGNAL( released() ), this, SLOT( dfuSaveBinary() ) );
     connect( ui->show_dfu_pushButton, SIGNAL( released() ), this, SLOT( dfuListDevices() ) );
     connect( &dfuUtilProcess, SIGNAL( readyReadStandardOutput() ), this, SLOT( dfuCommandStatus() ) );
     connect( &dfuUtilProcess, SIGNAL( finished( int, QProcess::ExitStatus ) ), this, SLOT( dfuCommandComplete( int ) ) );
     connect( serial, SIGNAL(readyRead() ), this, SLOT(serialReadyRead() ) );
     connect( ui->sensor_set_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT( set_sensor_orientation(int) ) );
     connect( ui->rot_dir_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(set_rotational_direction(int) ) );
+    connect( ui->rev_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(set_rev(int) ) );
 
     // Only use the included dfu-util
     binaryPath = QFileInfo( QCoreApplication::applicationFilePath() ).dir().absolutePath();
@@ -94,8 +97,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->connect_pushButton->setDisabled( true );
     ui->reboot_pushButton->setDisabled( false );
     ui->pull_settings_pushButton->setDisabled( true );
+    ui->default_settings_pushButton->setDisabled( true );
     ui->push_settings_pushButton->setDisabled( true );
     ui->rx_select_comboBox->addItems(QStringList() << "SBUS" << "SRXL");
+
+    ui->rev_buttonGroup->setExclusive(false);
 
     // set IDs
     ui->sensor_set_buttonGroup->setId(ui->sensor_rot_x_plus_pushButton, 101);
@@ -108,8 +114,22 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->rot_dir_buttonGroup->setId(ui->cw_radioButton, 201);
     ui->rot_dir_buttonGroup->setId(ui->ccw_radioButton, 202);
 
+    ui->rev_buttonGroup->setId(ui->rc_thrust_rev_checkBox, 301);
+    ui->rev_buttonGroup->setId(ui->rc_roll_rev_checkBox, 302);
+    ui->rev_buttonGroup->setId(ui->rc_nick_rev_checkBox, 303);
+    ui->rev_buttonGroup->setId(ui->rc_gier_rev_checkBox, 304);
+    ui->rev_buttonGroup->setId(ui->rc_arm_rev_checkBox, 305);
+    ui->rev_buttonGroup->setId(ui->rc_mode_rev_checkBox, 306);
+    ui->rev_buttonGroup->setId(ui->rc_beep_rev_checkBox, 307);
+    ui->rev_buttonGroup->setId(ui->rc_prog_rev_checkBox, 308);
+    ui->rev_buttonGroup->setId(ui->rc_var_rev_checkBox, 309);
+    ui->rev_buttonGroup->setId(ui->rc_aux1_rev_checkBox, 310);
+    ui->rev_buttonGroup->setId(ui->rc_aux2_rev_checkBox, 311);
+    ui->rev_buttonGroup->setId(ui->rc_aux3_rev_checkBox, 312);
+
     // set some globally used variables
     settings_to_be_read = false;
+    channels_to_be_read = false;
     settings_to_be_write = false;
     serial_to_be_closed = false;
     pulled = false;
@@ -133,7 +153,7 @@ void MainWindow::timer_elapsed()
 
     refreshSerialDevices();
 
-    display_channels_scene();
+    display_channels_scene();   
 
     if ( serial_to_be_closed == true)
     {
@@ -176,8 +196,8 @@ void MainWindow::timer_elapsed()
 
             StatusLabel->setText("Connected");
             ui->start_bootloader_pushButton->setDisabled( false );
-
-            ui->reboot_pushButton->setDisabled( false );
+            ui->reboot_pushButton->setDisabled( false );            
+            ui->default_settings_pushButton->setDisabled( false );
 
             // enable again after pulled data read
             if (settings_to_be_read == false)
@@ -193,6 +213,7 @@ void MainWindow::timer_elapsed()
             StatusLabel->setText("Not Connected");
             ui->start_bootloader_pushButton->setDisabled( true );
             ui->pull_settings_pushButton->setDisabled( true );
+            ui->default_settings_pushButton->setDisabled( true );
             ui->push_settings_pushButton->setDisabled( true );
             ui->disconnect_pushButton->setDisabled( true );
             ui->reboot_pushButton->setDisabled( true );
@@ -249,40 +270,299 @@ void MainWindow::refreshSerialDevices()
     if ( found_our_port )
     {
         ui->flash_pushButton->setDisabled( true );
+        ui->fw_save_pushButton->setDisabled( true );
         ui->show_dfu_pushButton->setDisabled( true );
     }
     else
     {
         ui->connect_pushButton->setDisabled( true );
         ui->flash_pushButton->setDisabled( false );
+        ui->fw_save_pushButton->setDisabled( false );
         ui->show_dfu_pushButton->setDisabled( false);
     }
 }
 
-/*
-void MainWindow::on_tabWidget_currentChanged(int index)
+
+void MainWindow::on_tab_currentChanged(int index)
 {
+
+    if (serial->isOpen())
+    {
+        serial->clear();
+
+        switch (index)
+        {
+        case 0:
+            serial->write("stop_channels", 14);
+            channels_to_be_read = false;
+            break;
+
+        case 1:
+            serial->write("send_channels", 14);
+            channels_to_be_read = true;
+            break;
+
+        case 2:
+            serial->write("stop_channels", 14);
+            channels_to_be_read = false;
+            break;
+
+        case 3:
+            serial->write("stop_channels", 14);
+            channels_to_be_read = false;
+            break;
+        }
+    }
+
+}
+
+void MainWindow::set_rev(int index)
+{
+    int i, status;
 
     switch (index)
     {
-    case 0:
-        serial->write("stop_live", 10);
+    case thrust_rev:
+        status = ui->rc_thrust_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_thrust].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_thrust].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
         break;
 
-    case 1:
-        serial->write("stop_live", 10);
+    case roll_rev:
+        status = ui->rc_roll_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_roll].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_roll].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
         break;
 
-    case 2:
-        serial->write("stop_live", 10);
+    case nick_rev:
+        status = ui->rc_nick_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_nick].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_nick].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
         break;
 
-    case 3:
-        serial->write("send_live", 10);
+    case gier_rev:
+        status = ui->rc_gier_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_gier].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_gier].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
         break;
+
+    case arm_rev:
+        status = ui->rc_arm_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_arm].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_arm].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case mode_rev:
+        status = ui->rc_mode_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_mode].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_mode].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case beep_rev:
+        status = ui->rc_beep_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_beep].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_beep].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case prog_rev:
+        status = ui->rc_prog_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_prog].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_prog].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case var_rev:
+        status = ui->rc_var_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_var].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_var].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case aux1_rev:
+        status = ui->rc_aux1_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_aux1].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_aux1].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case aux2_rev:
+        status = ui->rc_aux2_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_aux2].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_aux2].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
+    case aux3_rev:
+        status = ui->rc_aux3_rev_checkBox->isChecked();
+        rc_ch[rc_func[r_aux3].number].rev = status;
+        for ( i = 1; i < 13; i++)
+        {
+            if ( rc_func[i].number ==  rc_func[r_aux3].number )
+            {
+                 rc_func[i].rev = status;
+                 ui->rev_buttonGroup->button(300 + i)->setChecked( status );
+            }
+        }
+        break;
+
     }
 }
-*/
+
+void MainWindow::on_rc_thrust_spinBox_valueChanged(int value)
+{
+    rc_func[r_thrust] = rc_ch[value];
+    ui->rc_thrust_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_roll_spinBox_valueChanged(int value)
+{
+    rc_func[r_roll] = rc_ch[value];
+    ui->rc_roll_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_nick_spinBox_valueChanged(int value)
+{
+    rc_func[r_nick] = rc_ch[value];
+    ui->rc_nick_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_gier_spinBox_valueChanged(int value)
+{
+    rc_func[r_gier] = rc_ch[value];
+    ui->rc_gier_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_arm_spinBox_valueChanged(int value)
+{
+    rc_func[r_arm] = rc_ch[value];
+    ui->rc_arm_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_mode_spinBox_valueChanged(int value)
+{
+    rc_func[r_mode] = rc_ch[value];
+    ui->rc_mode_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_beep_spinBox_valueChanged(int value)
+{
+    rc_func[r_beep] = rc_ch[value];
+     ui->rc_beep_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_prog_spinBox_valueChanged(int value)
+{
+    rc_func[r_prog] = rc_ch[value];
+    ui->rc_prog_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_var_spinBox_valueChanged(int value)
+{
+    rc_func[r_var] = rc_ch[value];
+    ui->rc_var_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_aux1_spinBox_valueChanged(int value)
+{
+    rc_func[r_aux1] = rc_ch[value];
+    ui->rc_aux1_rev_checkBox->setChecked( rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_aux2_spinBox_valueChanged(int value)
+{
+    rc_func[r_aux2] = rc_ch[value];
+    ui->rc_aux2_rev_checkBox->setChecked(  rc_ch[value].rev );
+}
+
+
+void MainWindow::on_rc_aux3_spinBox_valueChanged(int value)
+{
+    rc_func[r_aux3] = rc_ch[value];
+    ui->rc_aux3_rev_checkBox->setChecked( rc_ch[value].rev );
+}
 
 void MainWindow::on_pull_settings_pushButton_clicked()
 {
@@ -353,18 +633,39 @@ void MainWindow::on_push_settings_pushButton_clicked()
         ps->motor_4.rotational_direction = CW;
     }
 
-    ps->rc_thrust = ui->rc_thrust_spinBox->value();
-    ps->rc_roll = ui->rc_roll_spinBox->value();
-    ps->rc_nick = ui->rc_nick_spinBox->value();
-    ps->rc_gier = ui->rc_gier_spinBox->value();
-    ps->rc_arm = ui->rc_arm_spinBox->value();
-    ps->rc_mode = ui->rc_mode_spinBox->value();
-    ps->rc_beep = ui->rc_beep_spinBox->value();
-    ps->rc_prog = ui->rc_prog_spinBox->value();
-    ps->rc_var = ui->rc_var_spinBox->value();
-    ps->rc_write = ui->rc_write_spinBox->value();
-    ps->rc_aux1 = ui->rc_aux1_spinBox->value();
-    ps->rc_aux2 = ui->rc_aux2_spinBox->value();
+    for ( i = 0; i < 13; i++ )
+    {
+        ps->rc_func[i] = rc_func[i];
+        ps->rc_ch[i] = rc_ch[i];
+    }
+
+    /*
+    ps->rc[r_thrust].number= ui->rc_thrust_spinBox->value();
+    ps->rc[r_roll].number= ui->rc_roll_spinBox->value();
+    ps->rc[r_nick].number= ui->rc_nick_spinBox->value();
+    ps->rc[r_gier].number= ui->rc_gier_spinBox->value();
+    ps->rc[r_arm].number= ui->rc_arm_spinBox->value();
+    ps->rc[r_mode].number= ui->rc_mode_spinBox->value();
+    ps->rc[r_beep].number= ui->rc_beep_spinBox->value();
+    ps->rc[r_prog].number= ui->rc_prog_spinBox->value();
+    ps->rc[r_var].number= ui->rc_var_spinBox->value();
+    ps->rc[r_write].number= ui->rc_write_spinBox->value();
+    ps->rc[r_aux1].number= ui->rc_aux1_spinBox->value();
+    ps->rc[r_aux2].number= ui->rc_aux2_spinBox->value();
+
+    ps->rc[r_thrust].rev = ui->rc_thrust_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_roll].rev  = ui->rc_roll_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_nick].rev  = ui->rc_nick_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_gier].rev  = ui->rc_gier_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_arm].rev  = ui->rc_arm_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_mode].rev  = ui->rc_mode_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_beep].rev  = ui->rc_beep_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_prog].rev  = ui->rc_prog_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_var].rev  = ui->rc_var_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_write].rev  = ui->rc_write_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_aux1].rev  = ui->rc_aux1_rev_checkBox->isChecked() ? 1 : 0;
+    ps->rc[r_aux2].rev  = ui->rc_aux2_rev_checkBox->isChecked() ? 1 : 0;
+    */
 
     for(i=0; i<3; ++i)
         for(j=0; j<3; ++j)
@@ -377,6 +678,13 @@ void MainWindow::on_push_settings_pushButton_clicked()
     ps->receiver = ui->rx_select_comboBox->currentIndex();
 
     settings_to_be_write = true;
+}
+
+
+void MainWindow::on_default_settings_pushButton_clicked()
+{
+    settings_data.clear();
+    serial->write("load_defaults", 14);
 }
 
 void MainWindow::on_reboot_pushButton_clicked()
@@ -421,6 +729,17 @@ void MainWindow::on_connect_pushButton_clicked()
     serial->setParity(QSerialPort::NoParity);
     serial->setStopBits(QSerialPort::OneStop);
     serial->setFlowControl(QSerialPort::NoFlowControl);
+
+    if (ui->tab->currentIndex() == 1)
+    {
+        serial->write("send_channels", 14);
+        channels_to_be_read = true;
+    }
+    else
+    {
+        serial->write("stop_channels", 14);
+        channels_to_be_read = false;
+    }
 }
 
 void MainWindow::on_disconnect_pushButton_clicked()
@@ -542,7 +861,7 @@ void MainWindow::serialReadyRead()
     {
         settings_data.append(serial->read(1024));
 
-        if ( settings_data.size() >= 1024 )
+        if ( settings_data.size() == 1024 )
         {
             ps = (settings*) settings_data.data();
 
@@ -596,18 +915,37 @@ void MainWindow::serialReadyRead()
                     sensor_orientation[i][j] = ps->sensor_orient[i][j];
                 }
 
-            ui->rc_thrust_spinBox->setValue(ps->rc_thrust);
-            ui->rc_roll_spinBox->setValue(ps->rc_roll);
-            ui->rc_nick_spinBox->setValue(ps->rc_nick);
-            ui->rc_gier_spinBox->setValue(ps->rc_gier);
-            ui->rc_arm_spinBox->setValue(ps->rc_arm);
-            ui->rc_mode_spinBox->setValue(ps->rc_mode);
-            ui->rc_beep_spinBox->setValue(ps->rc_beep);
-            ui->rc_prog_spinBox->setValue(ps->rc_prog);
-            ui->rc_var_spinBox->setValue(ps->rc_var);
-            ui->rc_write_spinBox->setValue(ps->rc_write);
-            ui->rc_aux1_spinBox->setValue(ps->rc_aux1);
-            ui->rc_aux2_spinBox->setValue(ps->rc_aux2);
+            ui->rc_thrust_spinBox->setValue(ps->rc_func[r_thrust].number);
+            ui->rc_roll_spinBox->setValue(ps->rc_func[r_roll].number);
+            ui->rc_nick_spinBox->setValue(ps->rc_func[r_nick].number);
+            ui->rc_gier_spinBox->setValue(ps->rc_func[r_gier].number);
+            ui->rc_arm_spinBox->setValue(ps->rc_func[r_arm].number);
+            ui->rc_mode_spinBox->setValue(ps->rc_func[r_mode].number);
+            ui->rc_beep_spinBox->setValue(ps->rc_func[r_beep].number);
+            ui->rc_prog_spinBox->setValue(ps->rc_func[r_prog].number);
+            ui->rc_var_spinBox->setValue(ps->rc_func[r_var].number);
+            ui->rc_aux1_spinBox->setValue(ps->rc_func[r_aux1].number);
+            ui->rc_aux2_spinBox->setValue(ps->rc_func[r_aux2].number);
+            ui->rc_aux3_spinBox->setValue(ps->rc_func[r_aux3].number);
+
+            ui->rc_thrust_rev_checkBox->setChecked( ps->rc_func[r_thrust].rev );
+            ui->rc_roll_rev_checkBox->setChecked( ps->rc_func[r_roll].rev );
+            ui->rc_nick_rev_checkBox->setChecked( ps->rc_func[r_nick].rev );
+            ui->rc_gier_rev_checkBox->setChecked( ps->rc_func[r_gier].rev );
+            ui->rc_arm_rev_checkBox->setChecked( ps->rc_func[r_arm].rev );
+            ui->rc_mode_rev_checkBox->setChecked( ps->rc_func[r_mode].rev );
+            ui->rc_beep_rev_checkBox->setChecked( ps->rc_func[r_beep].rev );
+            ui->rc_prog_rev_checkBox->setChecked( ps->rc_func[r_prog].rev );
+            ui->rc_var_rev_checkBox->setChecked( ps->rc_func[r_var].rev );
+            ui->rc_aux1_rev_checkBox->setChecked( ps->rc_func[r_aux1].rev );
+            ui->rc_aux2_rev_checkBox->setChecked( ps->rc_func[r_aux2].rev );
+            ui->rc_aux3_rev_checkBox->setChecked( ps->rc_func[r_aux3].rev );
+
+            for ( i = 0; i < 13; i++ )
+            {
+                rc_func[i] = ps->rc_func[i];
+                rc_ch[i] = ps->rc_ch[i];
+            }
 
             rotational_direction = ps->motor_2.rotational_direction;
 
@@ -620,31 +958,38 @@ void MainWindow::serialReadyRead()
 
         }
     }
-    else
+    else if (channels_to_be_read == 1)
     {
 
         QString rc_data_string = serial->readLine(61);
 
-        //QStringList list = serial->readLine(70).
-
-        QStringList list = rc_data_string.split(' ');
+        QStringList list = rc_data_string.trimmed().split(' ');
 
         if ( list.count() == 12 )
         {
+            ui->rc_ch_01_label->setText(list.at(0));
+            ui->rc_ch_02_label->setText(list.at(1));
+            ui->rc_ch_03_label->setText(list.at(2));
+            ui->rc_ch_04_label->setText(list.at(3));
+            ui->rc_ch_05_label->setText(list.at(4));
+            ui->rc_ch_06_label->setText(list.at(5));
+            ui->rc_ch_07_label->setText(list.at(6));
+            ui->rc_ch_08_label->setText(list.at(7));
+            ui->rc_ch_09_label->setText(list.at(8));
+            ui->rc_ch_10_label->setText(list.at(9));
+            ui->rc_ch_11_label->setText(list.at(10));
+            ui->rc_ch_12_label->setText(list.at(11));
+
             QListIterator<QString> iter(list);
             for (i=0; i<12; i++)
             {
                 rc_channels.replace(i, iter.next().toInt() );
             }
         }
-
-        /*
-        printf("%d %d %d %d %d %d %d %d %d %d %d %d\n",
-               rc_channels.at(0), rc_channels.at(1),  rc_channels.at(2),
-               rc_channels.at(3), rc_channels.at(4), rc_channels.at(5),
-               rc_channels.at(6), rc_channels.at(7), rc_channels.at(8),
-               rc_channels.at(9), rc_channels.at(10), rc_channels.at(11) );
-        */
+    }
+    else
+    {
+        serial->readAll();
     }
 }
 
@@ -691,7 +1036,7 @@ void MainWindow::showStatusInfo(QString info)
 }
 
 void MainWindow::browseFiles()
-{
+{   
     ui->fw_select_lineEdit->setText(
         QFileDialog::getOpenFileName(
             this,
@@ -701,6 +1046,20 @@ void MainWindow::browseFiles()
         )
     );
 }
+
+
+void MainWindow::browse_saveFile()
+{
+    ui->fw_save_select_lineEdit->setText(
+        QFileDialog::getSaveFileName(
+            this,
+            tr("Save File"),
+            QString(),
+            tr("DFU Binary ( *.dfu.bin *.bin );;All Files ( * )")
+        )
+    );
+}
+
 
 bool MainWindow::checkDFU( QFile *dfuUtil )
 {
@@ -717,11 +1076,70 @@ bool MainWindow::checkDFU( QFile *dfuUtil )
     return true;
 }
 
+
+void MainWindow::dfuSaveBinary()
+{
+
+    QString dfuCmd;
+    QFile saveFile( ui->fw_save_select_lineEdit->text() );
+
+#ifdef WIN32
+    QFile dfuUtil( binaryPath + "/" + "dfu-util.exe");
+#else
+    QFile dfuUtil( binaryPath + "/" + "dfu-util" );
+#endif
+
+    // Only run dfu-util if it exists
+    if ( !checkDFU( &dfuUtil ) )
+    {
+        return;
+    }
+
+    if ( saveFile.exists() )
+    {
+        saveFile.remove();
+    }
+
+    // Run dfu-util command
+    if (ui->restart_checkBox->isChecked())
+    {
+        if ( ui->incl_settings_checkBox->isChecked() )
+        {
+           dfuCmd = QString("%1 -s %2 -U %3").arg( dfuUtil.fileName(), "0x08004000:leave", saveFile.fileName() );
+        }
+        else
+        {
+            dfuCmd = QString("%1 -s %2 -U %3").arg( dfuUtil.fileName(), "0x08004000:102400:leave", saveFile.fileName() );
+        }
+    }
+    else
+    {
+        if ( ui->incl_settings_checkBox->isChecked() )
+        {
+            dfuCmd = QString("%1 -s %2 -U %3").arg( dfuUtil.fileName(), "0x08004000", saveFile.fileName() );
+        }
+        else
+        {
+            dfuCmd = QString("%1 -s %2 -U %3").arg( dfuUtil.fileName(), "0x08004000:102400", saveFile.fileName() );
+        }
+    }
+
+    dfuUtilProcess.start( dfuCmd );
+
+    // Disable the flash button while command is running
+    ui->flash_pushButton->setDisabled( true );
+    ui->fw_save_pushButton->setDisabled( true );
+    ui->show_dfu_pushButton->setDisabled( true );
+
+}
+
+
 void MainWindow::dfuFlashBinary()
 {
     // Check if file exists
     QString dfuCmd;
     QFile flashFile( ui->fw_select_lineEdit->text() );
+
     if ( !flashFile.exists() )
     {
         // Error if no file selected
@@ -753,7 +1171,7 @@ void MainWindow::dfuFlashBinary()
     }
 
     // Run dfu-util command
-    if (ui->restart_radioButton->isChecked())
+    if (ui->restart_checkBox->isChecked())
     {
         dfuCmd = QString("%1 -s %2 -D %3").arg( dfuUtil.fileName(), "0x08004000:leave", flashFile.fileName() );
     }
@@ -766,6 +1184,7 @@ void MainWindow::dfuFlashBinary()
 
     // Disable the flash button while command is running
     ui->flash_pushButton->setDisabled( true );
+    ui->fw_save_pushButton->setDisabled( true );
     ui->show_dfu_pushButton->setDisabled( true );
 }
 
@@ -791,6 +1210,7 @@ void MainWindow::dfuListDevices()
 
     // Disable the flash button while command is running
     ui->flash_pushButton->setDisabled( true );
+    ui->fw_save_pushButton->setDisabled( true );
     ui->show_dfu_pushButton->setDisabled( true );
 }
 
@@ -927,9 +1347,7 @@ void MainWindow::display_channels_scene()
     int i;
     int ch;
 
-
     channels_scene->clear();
-
 
     ui->rc_channels_graphicsView->setScene(channels_scene);
     QPen outlinePen(Qt::black);
@@ -946,20 +1364,6 @@ void MainWindow::display_channels_scene()
         rectangle = channels_scene->addRect( 10, i, rc_channels.at(ch) / 10, 10, outlinePen, grayBrush );
         ch++;
     }
-
-    /*
-    rectangle = channels_scene->addRect( 10, 33, rc_channels.at(rc_roll) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 61, rc_channels.at(rc_nick) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 89, rc_channels.at(rc_gier) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 117, rc_channels.at(rc_arm) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 145, rc_channels.at(rc_mode) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 173, rc_channels.at(rc_beep) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 201, rc_channels.at(rc_prog) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 229, rc_channels.at(rc_var) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 257, rc_channels.at(rc_write) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 285, rc_channels.at(rc_aux1) / 10, 15, outlinePen, grayBrush );
-    rectangle = channels_scene->addRect( 10, 313, rc_channels.at(rc_aux2) / 10, 15, outlinePen, grayBrush );
-    */
 }
 
 
