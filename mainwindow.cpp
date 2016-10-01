@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->result_textEdit->setReadOnly( true );
     ui->start_bootloader_pushButton->setDisabled( true );
     ui->connect_pushButton->setDisabled( true );
-    ui->reboot_pushButton->setDisabled( false );
+    ui->reboot_pushButton->setDisabled( true );
     ui->pull_settings_pushButton->setDisabled( true );
     ui->default_settings_pushButton->setDisabled( true );
     ui->push_settings_pushButton->setDisabled( true );
@@ -138,9 +138,6 @@ MainWindow::MainWindow(QWidget *parent) :
     rotational_direction = CW;
     rc_channels << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
 
-
-
-
     // will be refreshed only if changed
     display_config_scene(CW);
 }
@@ -152,18 +149,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::timer_elapsed()
 {
-
     qint64 res;
 
     refreshSerialDevices();
-
     display_channels_scene();   
 
     if ( serial_to_be_closed == true)
     {
         serial->close();
         StatusLabel->setText("Not Connected");
-
         serial_to_be_closed = false;
     }
     else
@@ -173,6 +167,10 @@ void MainWindow::timer_elapsed()
             if (  settings_to_be_write )
             {
                 ui->push_settings_pushButton->setDisabled( true );
+                ui->default_settings_pushButton->setDisabled( true );
+                ui->reboot_pushButton->setDisabled( true );
+                ui->pull_settings_pushButton->setDisabled( true );
+
 
                 if ( bytes_written < 1024 )
                 {
@@ -193,24 +191,34 @@ void MainWindow::timer_elapsed()
                     bytes_written = 0;
                 }
             }
-            else  if (pulled)
+            else
             {
-                ui->push_settings_pushButton->setDisabled( false );
+
+                StatusLabel->setText("Connected");
+                ui->start_bootloader_pushButton->setDisabled( false );
+                ui->reboot_pushButton->setDisabled( false );
+                ui->default_settings_pushButton->setDisabled( false );
+
+                // enable again after pulled data read
+                if (settings_to_be_read == false)
+                {
+                    ui->pull_settings_pushButton->setDisabled( false );
+                }
+
+                ui->connect_pushButton->setDisabled( true );
+                ui->disconnect_pushButton->setDisabled( false );
+
+                // enable again after pulled data read
+                if (settings_to_be_read == false)
+                {
+                    ui->pull_settings_pushButton->setDisabled( false );
+                }
+
+                if (pulled)
+                {
+                    ui->push_settings_pushButton->setDisabled( false );
+                }
             }
-
-            StatusLabel->setText("Connected");
-            ui->start_bootloader_pushButton->setDisabled( false );
-            ui->reboot_pushButton->setDisabled( false );            
-            ui->default_settings_pushButton->setDisabled( false );
-
-            // enable again after pulled data read
-            if (settings_to_be_read == false)
-            {
-                ui->pull_settings_pushButton->setDisabled( false );
-            }
-
-            ui->connect_pushButton->setDisabled( true );
-            ui->disconnect_pushButton->setDisabled( false );
         }
         else
         {
@@ -248,6 +256,9 @@ void MainWindow::timer_elapsed()
     // -----------------------------------------------------------------
     if ( settings_to_be_read )
     {
+        ui->push_settings_pushButton->setDisabled( true );
+        ui->default_settings_pushButton->setDisabled( true );
+        ui->reboot_pushButton->setDisabled( true );
         delay_counter++;
     }
 }
@@ -286,38 +297,40 @@ void MainWindow::refreshSerialDevices()
     }
 }
 
-
 void MainWindow::on_tab_currentChanged(int index)
 {
-
     if (serial->isOpen())
     {
         serial->clear();
 
         switch (index)
         {
-        case 0:
+        case Firmware:
             serial->write("stop_channels", 14);
             channels_to_be_read = false;
             break;
 
-        case 1:
+        case Configuration:
             serial->write("send_channels", 14);
             channels_to_be_read = true;
             break;
 
-        case 2:
+        case Motor_test:
             serial->write("stop_channels", 14);
             channels_to_be_read = false;
             break;
 
-        case 3:
+        case Flight_setup:
+            serial->write("stop_channels", 14);
+            channels_to_be_read = false;
+            break;
+
+        case Live_plots:
             serial->write("stop_channels", 14);
             channels_to_be_read = false;
             break;
         }
     }
-
 }
 
 void MainWindow::set_rev(int index)
@@ -481,7 +494,6 @@ void MainWindow::set_rev(int index)
             }
         }
         break;
-
     }
 }
 
@@ -643,34 +655,6 @@ void MainWindow::on_push_settings_pushButton_clicked()
         ps->rc_ch[i] = rc_ch[i];
     }
 
-    /*
-    ps->rc[r_thrust].number= ui->rc_thrust_spinBox->value();
-    ps->rc[r_roll].number= ui->rc_roll_spinBox->value();
-    ps->rc[r_nick].number= ui->rc_nick_spinBox->value();
-    ps->rc[r_gier].number= ui->rc_gier_spinBox->value();
-    ps->rc[r_arm].number= ui->rc_arm_spinBox->value();
-    ps->rc[r_mode].number= ui->rc_mode_spinBox->value();
-    ps->rc[r_beep].number= ui->rc_beep_spinBox->value();
-    ps->rc[r_prog].number= ui->rc_prog_spinBox->value();
-    ps->rc[r_var].number= ui->rc_var_spinBox->value();
-    ps->rc[r_write].number= ui->rc_write_spinBox->value();
-    ps->rc[r_aux1].number= ui->rc_aux1_spinBox->value();
-    ps->rc[r_aux2].number= ui->rc_aux2_spinBox->value();
-
-    ps->rc[r_thrust].rev = ui->rc_thrust_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_roll].rev  = ui->rc_roll_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_nick].rev  = ui->rc_nick_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_gier].rev  = ui->rc_gier_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_arm].rev  = ui->rc_arm_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_mode].rev  = ui->rc_mode_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_beep].rev  = ui->rc_beep_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_prog].rev  = ui->rc_prog_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_var].rev  = ui->rc_var_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_write].rev  = ui->rc_write_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_aux1].rev  = ui->rc_aux1_rev_checkBox->isChecked() ? 1 : 0;
-    ps->rc[r_aux2].rev  = ui->rc_aux2_rev_checkBox->isChecked() ? 1 : 0;
-    */
-
     for(i=0; i<3; ++i)
         for(j=0; j<3; ++j)
         {
@@ -689,12 +673,15 @@ void MainWindow::on_default_settings_pushButton_clicked()
 {
     settings_data.clear();
     serial->write("load_defaults", 14);
+    pulled = false;
+    ui->push_settings_pushButton->setDisabled( true );
 }
 
 void MainWindow::on_reboot_pushButton_clicked()
 {
     settings_data.clear();
     serial->write("reboot", 7);
+    pulled = false;
 }
 
 void MainWindow::on_start_bootloader_pushButton_clicked()
@@ -865,101 +852,112 @@ void MainWindow::serialReadyRead()
     {
         settings_data.append(serial->read(1024));
 
-        if ( settings_data.size() == 1024 )
+        if ( settings_data.size() >= 1024 )
         {
             ps = (settings*) settings_data.data();
 
-            ui->roll_kp->setValue(ps->pidvars[RKp]);
-            ui->roll_ki->setValue(ps->pidvars[RKi]);
-            ui->roll_kd->setValue(ps->pidvars[RKd]);
-            ui->nick_kp->setValue(ps->pidvars[NKp]);
-            ui->nick_ki->setValue(ps->pidvars[NKi]);
-            ui->nick_kd->setValue(ps->pidvars[NKd]);
-            ui->gier_kp->setValue(ps->pidvars[GKp]);
-            ui->gier_ki->setValue(ps->pidvars[GKi]);
-            ui->gier_kd->setValue(ps->pidvars[GKd]);
-
-            ui->l_roll_kp->setValue(ps->l_pidvars[RKp]);
-            ui->l_roll_ki->setValue(ps->l_pidvars[RKi]);
-            ui->l_roll_kd->setValue(ps->l_pidvars[RKd]);
-            ui->l_nick_kp->setValue(ps->l_pidvars[NKp]);
-            ui->l_nick_ki->setValue(ps->l_pidvars[NKi]);
-            ui->l_nick_kd->setValue(ps->l_pidvars[NKd]);
-            ui->l_gier_kp->setValue(ps->l_pidvars[GKp]);
-            ui->l_gier_ki->setValue(ps->l_pidvars[GKi]);
-            ui->l_gier_kd->setValue(ps->l_pidvars[GKd]);
-
-            ui->roll_rate->setValue(ps->rate[roll]);
-            ui->nick_rate->setValue(ps->rate[nick]);
-            ui->gier_rate->setValue(ps->rate[gier]);
-
-            ui->motor1_ch_spinBox->setValue( ps->motor_1.tim_ch);
-            ui->motor2_ch_spinBox->setValue( ps->motor_2.tim_ch);
-            ui->motor3_ch_spinBox->setValue( ps->motor_3.tim_ch);
-            ui->motor4_ch_spinBox->setValue( ps->motor_4.tim_ch);
-
-            if (ps->motor_2.rotational_direction == CW)
+            if ( ps->magic == 0xdb )
             {
-                ui->cw_radioButton->setChecked(true);
-                ui->ccw_radioButton->setChecked(false);
+
+                ui->roll_kp->setValue(ps->pidvars[RKp]);
+                ui->roll_ki->setValue(ps->pidvars[RKi]);
+                ui->roll_kd->setValue(ps->pidvars[RKd]);
+                ui->nick_kp->setValue(ps->pidvars[NKp]);
+                ui->nick_ki->setValue(ps->pidvars[NKi]);
+                ui->nick_kd->setValue(ps->pidvars[NKd]);
+                ui->gier_kp->setValue(ps->pidvars[GKp]);
+                ui->gier_ki->setValue(ps->pidvars[GKi]);
+                ui->gier_kd->setValue(ps->pidvars[GKd]);
+
+                ui->l_roll_kp->setValue(ps->l_pidvars[RKp]);
+                ui->l_roll_ki->setValue(ps->l_pidvars[RKi]);
+                ui->l_roll_kd->setValue(ps->l_pidvars[RKd]);
+                ui->l_nick_kp->setValue(ps->l_pidvars[NKp]);
+                ui->l_nick_ki->setValue(ps->l_pidvars[NKi]);
+                ui->l_nick_kd->setValue(ps->l_pidvars[NKd]);
+                ui->l_gier_kp->setValue(ps->l_pidvars[GKp]);
+                ui->l_gier_ki->setValue(ps->l_pidvars[GKi]);
+                ui->l_gier_kd->setValue(ps->l_pidvars[GKd]);
+
+                ui->roll_rate->setValue(ps->rate[roll]);
+                ui->nick_rate->setValue(ps->rate[nick]);
+                ui->gier_rate->setValue(ps->rate[gier]);
+
+                ui->motor1_ch_spinBox->setValue( ps->motor_1.tim_ch);
+                ui->motor2_ch_spinBox->setValue( ps->motor_2.tim_ch);
+                ui->motor3_ch_spinBox->setValue( ps->motor_3.tim_ch);
+                ui->motor4_ch_spinBox->setValue( ps->motor_4.tim_ch);
+
+                if (ps->motor_2.rotational_direction == CW)
+                {
+                    ui->cw_radioButton->setChecked(true);
+                    ui->ccw_radioButton->setChecked(false);
+                }
+                else
+                {
+                    ui->ccw_radioButton->setChecked(true);
+                    ui->cw_radioButton->setChecked(false);
+                }
+
+                ui->aspect_ratio_doubleSpinBox->setValue(ps->aspect_ratio);
+
+                ui->rx_select_comboBox->setCurrentIndex(ps->receiver);
+
+                for(i=0; i<3; ++i)
+                    for(j=0; j<3; ++j)
+                    {
+                        sensor_orientation[i][j] = ps->sensor_orient[i][j];
+                    }
+
+                ui->rc_thrust_spinBox->setValue(ps->rc_func[r_thrust].number);
+                ui->rc_roll_spinBox->setValue(ps->rc_func[r_roll].number);
+                ui->rc_nick_spinBox->setValue(ps->rc_func[r_nick].number);
+                ui->rc_gier_spinBox->setValue(ps->rc_func[r_gier].number);
+                ui->rc_arm_spinBox->setValue(ps->rc_func[r_arm].number);
+                ui->rc_mode_spinBox->setValue(ps->rc_func[r_mode].number);
+                ui->rc_beep_spinBox->setValue(ps->rc_func[r_beep].number);
+                ui->rc_prog_spinBox->setValue(ps->rc_func[r_prog].number);
+                ui->rc_var_spinBox->setValue(ps->rc_func[r_var].number);
+                ui->rc_aux1_spinBox->setValue(ps->rc_func[r_aux1].number);
+                ui->rc_aux2_spinBox->setValue(ps->rc_func[r_aux2].number);
+                ui->rc_aux3_spinBox->setValue(ps->rc_func[r_aux3].number);
+
+                ui->rc_thrust_rev_checkBox->setChecked( ps->rc_func[r_thrust].rev );
+                ui->rc_roll_rev_checkBox->setChecked( ps->rc_func[r_roll].rev );
+                ui->rc_nick_rev_checkBox->setChecked( ps->rc_func[r_nick].rev );
+                ui->rc_gier_rev_checkBox->setChecked( ps->rc_func[r_gier].rev );
+                ui->rc_arm_rev_checkBox->setChecked( ps->rc_func[r_arm].rev );
+                ui->rc_mode_rev_checkBox->setChecked( ps->rc_func[r_mode].rev );
+                ui->rc_beep_rev_checkBox->setChecked( ps->rc_func[r_beep].rev );
+                ui->rc_prog_rev_checkBox->setChecked( ps->rc_func[r_prog].rev );
+                ui->rc_var_rev_checkBox->setChecked( ps->rc_func[r_var].rev );
+                ui->rc_aux1_rev_checkBox->setChecked( ps->rc_func[r_aux1].rev );
+                ui->rc_aux2_rev_checkBox->setChecked( ps->rc_func[r_aux2].rev );
+                ui->rc_aux3_rev_checkBox->setChecked( ps->rc_func[r_aux3].rev );
+
+                for ( i = 0; i < 13; i++ )
+                {
+                    rc_func[i] = ps->rc_func[i];
+                    rc_ch[i] = ps->rc_ch[i];
+                }
+
+                rotational_direction = ps->motor_2.rotational_direction;
+
+                display_config_scene(rotational_direction);
+
+                delay_counter = 0;
+                settings_to_be_read = false;
+
+                pulled = true;
+                ui->pull_settings_pushButton->setText("Pull Settings");
+
             }
             else
             {
-                ui->ccw_radioButton->setChecked(true);
-                ui->cw_radioButton->setChecked(false);
+                settings_to_be_read = false;
+                pulled = false;
+                ui->pull_settings_pushButton->setText("failed Pull Settings again!");
             }
-
-            ui->aspect_ratio_doubleSpinBox->setValue(ps->aspect_ratio);
-
-            ui->rx_select_comboBox->setCurrentIndex(ps->receiver);
-
-            for(i=0; i<3; ++i)
-                for(j=0; j<3; ++j)
-                {
-                    sensor_orientation[i][j] = ps->sensor_orient[i][j];
-                }
-
-            ui->rc_thrust_spinBox->setValue(ps->rc_func[r_thrust].number);
-            ui->rc_roll_spinBox->setValue(ps->rc_func[r_roll].number);
-            ui->rc_nick_spinBox->setValue(ps->rc_func[r_nick].number);
-            ui->rc_gier_spinBox->setValue(ps->rc_func[r_gier].number);
-            ui->rc_arm_spinBox->setValue(ps->rc_func[r_arm].number);
-            ui->rc_mode_spinBox->setValue(ps->rc_func[r_mode].number);
-            ui->rc_beep_spinBox->setValue(ps->rc_func[r_beep].number);
-            ui->rc_prog_spinBox->setValue(ps->rc_func[r_prog].number);
-            ui->rc_var_spinBox->setValue(ps->rc_func[r_var].number);
-            ui->rc_aux1_spinBox->setValue(ps->rc_func[r_aux1].number);
-            ui->rc_aux2_spinBox->setValue(ps->rc_func[r_aux2].number);
-            ui->rc_aux3_spinBox->setValue(ps->rc_func[r_aux3].number);
-
-            ui->rc_thrust_rev_checkBox->setChecked( ps->rc_func[r_thrust].rev );
-            ui->rc_roll_rev_checkBox->setChecked( ps->rc_func[r_roll].rev );
-            ui->rc_nick_rev_checkBox->setChecked( ps->rc_func[r_nick].rev );
-            ui->rc_gier_rev_checkBox->setChecked( ps->rc_func[r_gier].rev );
-            ui->rc_arm_rev_checkBox->setChecked( ps->rc_func[r_arm].rev );
-            ui->rc_mode_rev_checkBox->setChecked( ps->rc_func[r_mode].rev );
-            ui->rc_beep_rev_checkBox->setChecked( ps->rc_func[r_beep].rev );
-            ui->rc_prog_rev_checkBox->setChecked( ps->rc_func[r_prog].rev );
-            ui->rc_var_rev_checkBox->setChecked( ps->rc_func[r_var].rev );
-            ui->rc_aux1_rev_checkBox->setChecked( ps->rc_func[r_aux1].rev );
-            ui->rc_aux2_rev_checkBox->setChecked( ps->rc_func[r_aux2].rev );
-            ui->rc_aux3_rev_checkBox->setChecked( ps->rc_func[r_aux3].rev );
-
-            for ( i = 0; i < 13; i++ )
-            {
-                rc_func[i] = ps->rc_func[i];
-                rc_ch[i] = ps->rc_ch[i];
-            }
-
-            rotational_direction = ps->motor_2.rotational_direction;
-
-            display_config_scene(rotational_direction);
-
-            delay_counter = 0;
-            settings_to_be_read = false;
-
-            pulled = true;            
-
         }
     }
     else if (channels_to_be_read == 1)
@@ -989,6 +987,45 @@ void MainWindow::serialReadyRead()
             {
                 rc_channels.replace(i, iter.next().toInt() );
             }
+
+            QString labetext;
+
+            labetext = rc_func[r_thrust].number == 0 ? "disabled" : rc_channels.at(0) < 2048 ? "low    " : "high   ";
+            ui->rc_thrust_label->setText(labetext);
+
+            labetext = rc_func[r_roll].number == 0 ? "disabled" :  rc_channels.at(1) < 2048 ? "left   " : "right  ";
+            ui->rc_roll_label->setText(labetext);
+
+            labetext = rc_func[r_nick].number == 0 ? "disabled" : rc_channels.at(2) < 2048 ? "up     " : "down   ";
+            ui->rc_nick_label->setText(labetext);
+
+            labetext = rc_func[r_gier].number == 0 ? "disabled" : rc_channels.at(3) < 2048 ? "left   " : "right  ";
+            ui->rc_gier_label->setText(labetext);
+
+            labetext = rc_func[r_arm].number == 0 ? "disabled" : rc_channels.at(4) < 2800 ? "stop   " : "armed  ";
+            ui->rc_arm_label->setText(labetext);
+
+            labetext = rc_func[r_mode].number == 0 ? "disabled" : rc_channels.at(5) < 1200 ? "mode 1 " : rc_channels.at(5) > 2800 ? "mode 3 " : "mode 2 ";
+            ui->rc_mode_label->setText(labetext);
+
+            labetext = rc_func[r_beep].number == 0 ? "disabled" : rc_channels.at(6) < 2800 ? "off    " : "beep   ";
+            ui->rc_beep_label->setText(labetext);
+
+            labetext = rc_func[r_prog].number == 0 ? "disabled" : rc_channels.at(7) < 1200 ? "off    " : rc_channels.at(7) > 2800 ? "write  " : "prog   ";
+            ui->rc_prog_label->setText(labetext);
+
+            labetext = rc_func[r_var].number == 0 ? "disabled" : rc_channels.at(8) < 2048 ? "low    " : "high   ";
+            ui->rc_var_label->setText(labetext);
+
+            labetext = rc_func[r_aux1].number == 0 ? "disabled" : rc_channels.at(9) < 2048 ? "low    " : "high   ";
+            ui->rc_aux1_label->setText(labetext);
+
+            labetext = rc_func[r_aux2].number == 0 ? "disabled" : rc_channels.at(10) < 2048 ? "low    " : "high   ";
+            ui->rc_aux2_label->setText(labetext);
+
+            labetext = rc_func[r_aux3].number == 0 ? "disabled" : rc_channels.at(11) < 2048 ? "low    " : "high   ";
+            ui->rc_aux3_label->setText(labetext);
+
         }
     }
     else
@@ -1360,7 +1397,11 @@ void MainWindow::display_channels_scene()
 
     line = channels_scene->addLine( 10, 0, 10, 329, outlinePen);
     line = channels_scene->addLine( 215, 0, 215, 329, outlinePen);
-    line = channels_scene->addLine( 418, 0, 418, 329, outlinePen);
+    line = channels_scene->addLine( 419, 0, 419, 329, outlinePen);
+
+    line = channels_scene->addLine( 150, 0, 150, 329, outlinePen);
+    line = channels_scene->addLine( 280, 0, 280, 329, outlinePen);
+
 
     ch = 0;
     for (i=0; i<320; i+=29)
