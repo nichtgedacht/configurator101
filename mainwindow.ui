@@ -317,7 +317,7 @@
        <rect>
         <x>440</x>
         <y>110</y>
-        <width>101</width>
+        <width>111</width>
         <height>131</height>
        </rect>
       </property>
@@ -1358,14 +1358,19 @@
      <attribute name="title">
       <string>Motor test</string>
      </attribute>
-     <widget class="QCheckBox" name="checkBox">
+     <widget class="QCheckBox" name="motors_enable_checkBox">
       <property name="geometry">
        <rect>
-        <x>540</x>
-        <y>300</y>
+        <x>670</x>
+        <y>240</y>
         <width>161</width>
         <height>21</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Enable I know what I do </string>
@@ -1374,10 +1379,10 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>60</x>
-        <y>380</y>
-        <width>381</width>
-        <height>31</height>
+        <x>110</x>
+        <y>470</y>
+        <width>391</width>
+        <height>21</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_28">
@@ -1389,7 +1394,7 @@
           </font>
          </property>
          <property name="text">
-          <string>0000</string>
+          <string>1000</string>
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
@@ -1410,7 +1415,7 @@
           </font>
          </property>
          <property name="text">
-          <string>0000</string>
+          <string>1000</string>
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
@@ -1428,7 +1433,7 @@
           </font>
          </property>
          <property name="text">
-          <string>0000</string>
+          <string>1000</string>
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
@@ -1446,7 +1451,7 @@
           </font>
          </property>
          <property name="text">
-          <string>0000</string>
+          <string>1000</string>
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
@@ -1458,88 +1463,257 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QPushButton" name="motors_min_pushButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>30</y>
-        <width>481</width>
-        <height>351</height>
+        <x>530</x>
+        <y>470</y>
+        <width>51</width>
+        <height>21</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QGraphicsView" name="motor_value_graphicsView"/>
-       </item>
-       <item row="1" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_27">
-         <item>
-          <widget class="QSlider" name="motor1_value_verticalSlider">
-           <property name="autoFillBackground">
-            <bool>true</bool>
-           </property>
-           <property name="maximum">
-            <number>4095</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="motor2_value_verticalSlider">
-           <property name="autoFillBackground">
-            <bool>true</bool>
-           </property>
-           <property name="maximum">
-            <number>4095</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="motor3_value_verticalSlider">
-           <property name="autoFillBackground">
-            <bool>true</bool>
-           </property>
-           <property name="maximum">
-            <number>4095</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="motor4_value_verticalSlider">
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="autoFillBackground">
-            <bool>true</bool>
-           </property>
-           <property name="maximum">
-            <number>4095</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="1">
-        <widget class="QSlider" name="motor_value_master_verticalSlider">
+      <property name="text">
+       <string>Min</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">motors_min_max_buttonGroup</string>
+      </attribute>
+     </widget>
+     <widget class="QPushButton" name="motors_max_pushButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>90</y>
+        <width>51</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Max</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">motors_min_max_buttonGroup</string>
+      </attribute>
+     </widget>
+     <widget class="QLabel" name="label_49">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>50</y>
+        <width>51</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Master</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>72</x>
+        <y>121</y>
+        <width>571</width>
+        <height>341</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_27">
+       <item>
+        <widget class="QSlider" name="motor1_value_verticalSlider">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="autoFillBackground">
           <bool>true</bool>
          </property>
+         <property name="minimum">
+          <number>4000</number>
+         </property>
          <property name="maximum">
-          <number>4095</number>
+          <number>8000</number>
+         </property>
+         <property name="value">
+          <number>4000</number>
          </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="motor2_value_verticalSlider">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="minimum">
+          <number>4000</number>
+         </property>
+         <property name="maximum">
+          <number>8000</number>
+         </property>
+         <property name="value">
+          <number>4000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="motor3_value_verticalSlider">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="minimum">
+          <number>4000</number>
+         </property>
+         <property name="maximum">
+          <number>8000</number>
+         </property>
+         <property name="value">
+          <number>4000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="motor4_value_verticalSlider">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="minimum">
+          <number>4000</number>
+         </property>
+         <property name="maximum">
+          <number>8000</number>
+         </property>
+         <property name="sliderPosition">
+          <number>4000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="motor_value_master_verticalSlider">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="minimum">
+          <number>4000</number>
+         </property>
+         <property name="maximum">
+          <number>8000</number>
+         </property>
+         <property name="value">
+          <number>4000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>90</y>
+        <width>381</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_29">
+       <item>
+        <widget class="QLabel" name="motor1_label">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Motor 1</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="motor2_label">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Motor 2</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="motor3_label">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Motor 3</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="motor4_label">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Motor 4</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -2240,8 +2414,9 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="sensor_set_buttonGroup"/>
   <buttongroup name="rot_dir_buttonGroup"/>
   <buttongroup name="rev_buttonGroup"/>
+  <buttongroup name="sensor_set_buttonGroup"/>
+  <buttongroup name="motors_min_max_buttonGroup"/>
  </buttongroups>
 </ui>

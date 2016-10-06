@@ -101,6 +101,8 @@ enum {
 
 enum { Firmware, Configuration, Motor_test, Flight_setup, Live_plots };
 
+enum { min = 401, max = 402 };
+
 namespace Ui {
 class MainWindow;
 }
@@ -134,7 +136,20 @@ private slots:
     void on_rc_aux1_spinBox_valueChanged(int value);
     void on_rc_aux2_spinBox_valueChanged(int value);
     void on_rc_aux3_spinBox_valueChanged(int value);
+
+    void on_motors_enable_checkBox_clicked(bool checked);
+    void on_motor_value_master_verticalSlider_valueChanged(int value);
+    void on_motor1_value_verticalSlider_valueChanged(int value);
+    void on_motor2_value_verticalSlider_valueChanged(int value);
+    void on_motor3_value_verticalSlider_valueChanged(int value);
+    void on_motor4_value_verticalSlider_valueChanged(int value);
+
+    void motors_set_master_slider(int id);
+
     void set_rev(int index);
+
+    void check_rev( int status, int func );
+
     void on_tab_currentChanged(int index);
     void on_reboot_pushButton_clicked();
     void timer_elapsed();
@@ -165,6 +180,9 @@ private:
     QProcess dfuUtilProcess;
     QString binaryPath;
     QByteArray settings_data;
+
+    QByteArray motor_data;
+
     QList<int> rc_channels;
     void refreshSerialDevices();
     void showStatusInfo(QString info);
@@ -178,6 +196,9 @@ private:
     bool settings_to_be_write;
     bool found_our_port;
     bool pulled;
+    //bool motors_to_be_write_pre_state;
+    bool motors_to_be_write;
+    bool motors_receipt;
     qint64 bytes_written;
     motor motor_1;
     motor motor_2;
@@ -188,6 +209,11 @@ private:
     //uint8_t rc_rev[12];
     rc_channel rc_func[13] = { {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0} };
     rc_channel rc_ch[13] = { {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}, {11, 0}, {12, 0} };
+    uint16_t motor1_value = 4000;
+    uint16_t motor2_value = 4000;
+    uint16_t motor3_value = 4000;
+    uint16_t motor4_value = 4000;
+    int motors_write_state_counter;
 };
 
 #endif // MAINWINDOW_H
