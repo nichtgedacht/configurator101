@@ -133,7 +133,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->qcustomplot_widget->addGraph();
     ui->qcustomplot_widget->graph(8)->setPen(QPen(QColor(0, 85, 0)));
 
-
     //QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
     //timeTicker->setTimeFormat("%h:%m:%s");
     //ui->qcustomplot_widget->xAxis->setTicker(timeTicker);
@@ -178,11 +177,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->live_check_buttonGroup->setId(ui->acc_roll_checkBox, 501);
     ui->live_check_buttonGroup->setId(ui->acc_nick_checkBox, 502);
     ui->live_check_buttonGroup->setId(ui->acc_gier_checkBox, 503);
-
     ui->live_check_buttonGroup->setId(ui->gy_roll_checkBox, 504);
     ui->live_check_buttonGroup->setId(ui->gy_nick_checkBox, 505);
     ui->live_check_buttonGroup->setId(ui->gy_gier_checkBox, 506);
-
     ui->live_check_buttonGroup->setId(ui->ang_roll_checkBox, 507);
     ui->live_check_buttonGroup->setId(ui->ang_nick_checkBox, 508);
     ui->live_check_buttonGroup->setId(ui->ang_gier_checkBox, 509);
@@ -195,15 +192,11 @@ MainWindow::MainWindow(QWidget *parent) :
     // set some globally used variables
     settings_to_be_read = false;
     channels_to_be_read = false;
-
     live_to_be_read = false;
-
     settings_to_be_write = false;
     settings_written = false;
     serial_to_be_closed = false;
-
-    switch_state = 10;
-
+    switch_state = 42;
     found_our_port = false;
     pulled = false;
     motors_to_be_write = false;
@@ -217,12 +210,10 @@ MainWindow::MainWindow(QWidget *parent) :
     rotational_direction = CW;
     rc_channels << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
     live_values << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0;
-
     motor_data = "4000,4000,4000,4000";
 
     // will be refreshed only if changed
     display_config_scene(CW);
-
 }
 
 MainWindow::~MainWindow()
@@ -244,54 +235,36 @@ void MainWindow::live_graph_enable(int id)
 
 void MainWindow::realtimeDataSlot()
 {
+    // reset of lastPointKey
+    // restart of QTime plot_time (see below) and QTimer plot_timer
+    // which drives this slot will be done in state_switcher function
 
-    int i;
     //static QTime time(QTime::currentTime());
     // calculate two new data points:
     double key = plot_time.elapsed()/1000.0; // time elapsed since start, in seconds
-    //static double lastPointKey = 0;
-    if ( key - lastPointKey > 0.005 ) // at most add point every 2 ms
+
+    if ( key - lastPointKey > 0.005 ) // at most add point every 5 ms
     {
         // add data to lines:
 
-        for ( i=0; i<9; i++ )
+        for ( int i=0; i<9; i++ )
         {
            ui->qcustomplot_widget->graph(i)->addData(key, live_values.at(i) );
         }
 
-        /*
-        ui->qcustomplot_widget->graph(0)->addData(key, live_values.at(0) );
-        ui->qcustomplot_widget->graph(1)->addData(key, live_values.at(1) );
-        ui->qcustomplot_widget->graph(2)->addData(key, live_values.at(2) );
-
-        ui->qcustomplot_widget->graph(3)->addData(key, live_values.at(3) );
-        ui->qcustomplot_widget->graph(4)->addData(key, live_values.at(4) );
-        ui->qcustomplot_widget->graph(5)->addData(key, live_values.at(5) );
-
-        ui->qcustomplot_widget->graph(6)->addData(key, live_values.at(6) );
-        ui->qcustomplot_widget->graph(7)->addData(key, live_values.at(7) );
-        ui->qcustomplot_widget->graph(8)->addData(key, live_values.at(8) );
-        */
-
+        // scale only by values from visible graphs
         ui->qcustomplot_widget->yAxis->rescale(true);
 
-
-        // rescale value (vertical) axis to fit the current data:
+       // rescale value (vertical) axis to fit the current data:
        // ui->qcustomplot_widget->graph(0)->rescaleValueAxis();
        // ui->qcustomplot_widget->graph(1)->rescaleValueAxis();
        // ui->qcustomplot_widget->graph(2)->rescaleValueAxis();
 
-      //  ui->qcustomplot_widget->graph(2)->rescaleValueAxis(false);
-
-
-
-//        ui->qcustomplot_widget->graph(2)->setVisible(false);
-
         lastPointKey = key;
     }
-    // make key axis range scroll with the data (at a constant range size of 8):
+
+    // make key axis range scroll with the data (at a constant range size of 8 meaning seconds here)
     ui->qcustomplot_widget->xAxis->setRange(key, 8, Qt::AlignRight);
-    //ui->qcustomplot_widget->xAxis->setRangeReversed(true);
     ui->qcustomplot_widget->replot();
 }
 
@@ -447,7 +420,6 @@ void MainWindow::refreshSerialDevices()
 void MainWindow::state_switch(int state)
 {
 
-    int i;
     live_values.clear();
     live_values << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0 << 0.0;
     serial->clear();
@@ -500,7 +472,7 @@ void MainWindow::state_switch(int state)
         channels_to_be_read = false;
         motors_to_be_write = false;
         live_to_be_read = true;
-        for ( i=0; i<9; i++ )
+        for ( int i=0; i<9; i++ )
         {
             ui->qcustomplot_widget->graph(i)->data().data()->clear();
         }
@@ -509,6 +481,7 @@ void MainWindow::state_switch(int state)
         plot_time.start();
         break;
 
+    // not used jet
     case suspend:
         serial->write("suspend", 8);
         channels_to_be_read = false;
@@ -608,7 +581,7 @@ void MainWindow::set_rev(int index)
 // to the corresponding position in the rc_func array
 // this sets also the reverse field in rc_func from rc_ch
 // then check or uncheck the corresponding reverse checkbox
-// memorized at the corresponding rc_ch position in the rev field
+// memorized at the corresponding rc_ch position by the rev field
 void MainWindow::on_rc_thrust_spinBox_valueChanged(int value)
 {
     rc_func[r_thrust] = rc_ch[value];
@@ -932,7 +905,6 @@ void MainWindow::on_push_settings_pushButton_clicked()
 
     ps->receiver = ui->rx_select_comboBox->currentIndex();
 
-    //settings_to_be_write = true;
     push_pending = true;
 
 }
@@ -1080,123 +1052,119 @@ void MainWindow::serialReadyRead()
     */
 
     if ( settings_to_be_read && delay200 )
-    //if ( settings_to_be_read )
     {
-        //if ( delay_counter > 1)
-        //{
-            settings_data.append(serial->read(1024));
+        settings_data.append(serial->read(1024));
 
-            if ( settings_data.size() >= 1024 )
+        if ( settings_data.size() >= 1024 )
+        {
+            ps = (settings*) settings_data.data();
+
+            if ( ps->magic == 0xdb )
             {
-                ps = (settings*) settings_data.data();
 
-                if ( ps->magic == 0xdb )
+                ui->roll_kp->setValue(ps->pidvars[RKp]);
+                ui->roll_ki->setValue(ps->pidvars[RKi]);
+                ui->roll_kd->setValue(ps->pidvars[RKd]);
+                ui->nick_kp->setValue(ps->pidvars[NKp]);
+                ui->nick_ki->setValue(ps->pidvars[NKi]);
+                ui->nick_kd->setValue(ps->pidvars[NKd]);
+                ui->gier_kp->setValue(ps->pidvars[GKp]);
+                ui->gier_ki->setValue(ps->pidvars[GKi]);
+                ui->gier_kd->setValue(ps->pidvars[GKd]);
+
+                ui->l_roll_kp->setValue(ps->l_pidvars[RKp]);
+                ui->l_roll_ki->setValue(ps->l_pidvars[RKi]);
+                ui->l_roll_kd->setValue(ps->l_pidvars[RKd]);
+                ui->l_nick_kp->setValue(ps->l_pidvars[NKp]);
+                ui->l_nick_ki->setValue(ps->l_pidvars[NKi]);
+                ui->l_nick_kd->setValue(ps->l_pidvars[NKd]);
+                ui->l_gier_kp->setValue(ps->l_pidvars[GKp]);
+                ui->l_gier_ki->setValue(ps->l_pidvars[GKi]);
+                ui->l_gier_kd->setValue(ps->l_pidvars[GKd]);
+
+                ui->roll_rate->setValue(ps->rate[roll]);
+                ui->nick_rate->setValue(ps->rate[nick]);
+                ui->gier_rate->setValue(ps->rate[gier]);
+
+                ui->motor1_ch_spinBox->setValue( ps->motor_1.tim_ch);
+                ui->motor2_ch_spinBox->setValue( ps->motor_2.tim_ch);
+                ui->motor3_ch_spinBox->setValue( ps->motor_3.tim_ch);
+                ui->motor4_ch_spinBox->setValue( ps->motor_4.tim_ch);
+
+                if (ps->motor_2.rotational_direction == CW)
                 {
-
-                    ui->roll_kp->setValue(ps->pidvars[RKp]);
-                    ui->roll_ki->setValue(ps->pidvars[RKi]);
-                    ui->roll_kd->setValue(ps->pidvars[RKd]);
-                    ui->nick_kp->setValue(ps->pidvars[NKp]);
-                    ui->nick_ki->setValue(ps->pidvars[NKi]);
-                    ui->nick_kd->setValue(ps->pidvars[NKd]);
-                    ui->gier_kp->setValue(ps->pidvars[GKp]);
-                    ui->gier_ki->setValue(ps->pidvars[GKi]);
-                    ui->gier_kd->setValue(ps->pidvars[GKd]);
-
-                    ui->l_roll_kp->setValue(ps->l_pidvars[RKp]);
-                    ui->l_roll_ki->setValue(ps->l_pidvars[RKi]);
-                    ui->l_roll_kd->setValue(ps->l_pidvars[RKd]);
-                    ui->l_nick_kp->setValue(ps->l_pidvars[NKp]);
-                    ui->l_nick_ki->setValue(ps->l_pidvars[NKi]);
-                    ui->l_nick_kd->setValue(ps->l_pidvars[NKd]);
-                    ui->l_gier_kp->setValue(ps->l_pidvars[GKp]);
-                    ui->l_gier_ki->setValue(ps->l_pidvars[GKi]);
-                    ui->l_gier_kd->setValue(ps->l_pidvars[GKd]);
-
-                    ui->roll_rate->setValue(ps->rate[roll]);
-                    ui->nick_rate->setValue(ps->rate[nick]);
-                    ui->gier_rate->setValue(ps->rate[gier]);
-
-                    ui->motor1_ch_spinBox->setValue( ps->motor_1.tim_ch);
-                    ui->motor2_ch_spinBox->setValue( ps->motor_2.tim_ch);
-                    ui->motor3_ch_spinBox->setValue( ps->motor_3.tim_ch);
-                    ui->motor4_ch_spinBox->setValue( ps->motor_4.tim_ch);
-
-                    if (ps->motor_2.rotational_direction == CW)
-                    {
-                        ui->cw_radioButton->setChecked(true);
-                        ui->ccw_radioButton->setChecked(false);
-                    }
-                    else
-                    {
-                        ui->ccw_radioButton->setChecked(true);
-                        ui->cw_radioButton->setChecked(false);
-                    }
-
-                    ui->aspect_ratio_doubleSpinBox->setValue(ps->aspect_ratio);
-
-                    ui->rx_select_comboBox->setCurrentIndex(ps->receiver);
-
-                    for(i=0; i<3; ++i)
-                        for(j=0; j<3; ++j)
-                        {
-                            sensor_orientation[i][j] = ps->sensor_orient[i][j];
-                        }
-
-                    ui->rc_thrust_spinBox->setValue(ps->rc_func[r_thrust].number);
-                    ui->rc_roll_spinBox->setValue(ps->rc_func[r_roll].number);
-                    ui->rc_nick_spinBox->setValue(ps->rc_func[r_nick].number);
-                    ui->rc_gier_spinBox->setValue(ps->rc_func[r_gier].number);
-                    ui->rc_arm_spinBox->setValue(ps->rc_func[r_arm].number);
-                    ui->rc_mode_spinBox->setValue(ps->rc_func[r_mode].number);
-                    ui->rc_beep_spinBox->setValue(ps->rc_func[r_beep].number);
-                    ui->rc_prog_spinBox->setValue(ps->rc_func[r_prog].number);
-                    ui->rc_var_spinBox->setValue(ps->rc_func[r_var].number);
-                    ui->rc_aux1_spinBox->setValue(ps->rc_func[r_aux1].number);
-                    ui->rc_aux2_spinBox->setValue(ps->rc_func[r_aux2].number);
-                    ui->rc_aux3_spinBox->setValue(ps->rc_func[r_aux3].number);
-
-                    ui->rc_thrust_rev_checkBox->setChecked( ps->rc_func[r_thrust].rev );
-                    ui->rc_roll_rev_checkBox->setChecked( ps->rc_func[r_roll].rev );
-                    ui->rc_nick_rev_checkBox->setChecked( ps->rc_func[r_nick].rev );
-                    ui->rc_gier_rev_checkBox->setChecked( ps->rc_func[r_gier].rev );
-                    ui->rc_arm_rev_checkBox->setChecked( ps->rc_func[r_arm].rev );
-                    ui->rc_mode_rev_checkBox->setChecked( ps->rc_func[r_mode].rev );
-                    ui->rc_beep_rev_checkBox->setChecked( ps->rc_func[r_beep].rev );
-                    ui->rc_prog_rev_checkBox->setChecked( ps->rc_func[r_prog].rev );
-                    ui->rc_var_rev_checkBox->setChecked( ps->rc_func[r_var].rev );
-                    ui->rc_aux1_rev_checkBox->setChecked( ps->rc_func[r_aux1].rev );
-                    ui->rc_aux2_rev_checkBox->setChecked( ps->rc_func[r_aux2].rev );
-                    ui->rc_aux3_rev_checkBox->setChecked( ps->rc_func[r_aux3].rev );
-
-                    for ( i = 0; i < 13; i++ )
-                    {
-                        rc_func[i] = ps->rc_func[i];
-                        rc_ch[i] = ps->rc_ch[i];
-                    }
-
-                    rotational_direction = ps->motor_2.rotational_direction;
-
-                    display_config_scene(rotational_direction);
-
-                    delay200 = 0;
-                    settings_to_be_read = false;
-
-                    pulled = true;
-                    ui->pull_settings_pushButton->setText("Pull Settings");
-
-                    state_switch(switch_state);
-
+                    ui->cw_radioButton->setChecked(true);
+                    ui->ccw_radioButton->setChecked(false);
                 }
                 else
                 {
-                    delay200 = 0;
-                    settings_to_be_read = false;
-                    pulled = false;
-                    ui->pull_settings_pushButton->setText("failed Pull Settings again!");
+                    ui->ccw_radioButton->setChecked(true);
+                    ui->cw_radioButton->setChecked(false);
                 }
+
+                ui->aspect_ratio_doubleSpinBox->setValue(ps->aspect_ratio);
+
+                ui->rx_select_comboBox->setCurrentIndex(ps->receiver);
+
+                for(i=0; i<3; ++i)
+                    for(j=0; j<3; ++j)
+                    {
+                        sensor_orientation[i][j] = ps->sensor_orient[i][j];
+                    }
+
+                ui->rc_thrust_spinBox->setValue(ps->rc_func[r_thrust].number);
+                ui->rc_roll_spinBox->setValue(ps->rc_func[r_roll].number);
+                ui->rc_nick_spinBox->setValue(ps->rc_func[r_nick].number);
+                ui->rc_gier_spinBox->setValue(ps->rc_func[r_gier].number);
+                ui->rc_arm_spinBox->setValue(ps->rc_func[r_arm].number);
+                ui->rc_mode_spinBox->setValue(ps->rc_func[r_mode].number);
+                ui->rc_beep_spinBox->setValue(ps->rc_func[r_beep].number);
+                ui->rc_prog_spinBox->setValue(ps->rc_func[r_prog].number);
+                ui->rc_var_spinBox->setValue(ps->rc_func[r_var].number);
+                ui->rc_aux1_spinBox->setValue(ps->rc_func[r_aux1].number);
+                ui->rc_aux2_spinBox->setValue(ps->rc_func[r_aux2].number);
+                ui->rc_aux3_spinBox->setValue(ps->rc_func[r_aux3].number);
+
+                ui->rc_thrust_rev_checkBox->setChecked( ps->rc_func[r_thrust].rev );
+                ui->rc_roll_rev_checkBox->setChecked( ps->rc_func[r_roll].rev );
+                ui->rc_nick_rev_checkBox->setChecked( ps->rc_func[r_nick].rev );
+                ui->rc_gier_rev_checkBox->setChecked( ps->rc_func[r_gier].rev );
+                ui->rc_arm_rev_checkBox->setChecked( ps->rc_func[r_arm].rev );
+                ui->rc_mode_rev_checkBox->setChecked( ps->rc_func[r_mode].rev );
+                ui->rc_beep_rev_checkBox->setChecked( ps->rc_func[r_beep].rev );
+                ui->rc_prog_rev_checkBox->setChecked( ps->rc_func[r_prog].rev );
+                ui->rc_var_rev_checkBox->setChecked( ps->rc_func[r_var].rev );
+                ui->rc_aux1_rev_checkBox->setChecked( ps->rc_func[r_aux1].rev );
+                ui->rc_aux2_rev_checkBox->setChecked( ps->rc_func[r_aux2].rev );
+                ui->rc_aux3_rev_checkBox->setChecked( ps->rc_func[r_aux3].rev );
+
+                for ( i = 0; i < 13; i++ )
+                {
+                    rc_func[i] = ps->rc_func[i];
+                    rc_ch[i] = ps->rc_ch[i];
+                }
+
+                rotational_direction = ps->motor_2.rotational_direction;
+
+                display_config_scene(rotational_direction);
+
+                delay200 = 0;
+                settings_to_be_read = false;
+
+                pulled = true;
+                ui->pull_settings_pushButton->setText("Pull Settings");
+
+                state_switch(switch_state);
+
             }
-        //}
+            else
+            {
+                delay200 = 0;
+                settings_to_be_read = false;
+                pulled = false;
+                ui->pull_settings_pushButton->setText("failed Pull Settings again!");
+            }
+        }
     }
     else if (channels_to_be_read == 1)
     {
@@ -1279,7 +1247,7 @@ void MainWindow::serialReadyRead()
     }
     else if (live_to_be_read == 1)
     {
-        QString live_data_string = serial->readLine(200);
+        QString live_data_string = serial->readLine(100);
         QStringList live_list = live_data_string.trimmed().split(' ');
 
         if ( live_list.count() == 9 )

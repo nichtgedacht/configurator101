@@ -136,7 +136,6 @@ private slots:
     void on_pull_settings_pushButton_clicked();
     void on_push_settings_pushButton_clicked();
     void on_default_settings_pushButton_clicked();
-
     void on_rc_thrust_spinBox_valueChanged(int value);
     void on_rc_roll_spinBox_valueChanged(int value);
     void on_rc_nick_spinBox_valueChanged(int value);
@@ -149,17 +148,14 @@ private slots:
     void on_rc_aux1_spinBox_valueChanged(int value);
     void on_rc_aux2_spinBox_valueChanged(int value);
     void on_rc_aux3_spinBox_valueChanged(int value);
-
     void on_motors_enable_checkBox_clicked(bool checked);
     void on_motor_value_master_verticalSlider_valueChanged(int value);
     void on_motor1_value_verticalSlider_valueChanged(int value);
     void on_motor2_value_verticalSlider_valueChanged(int value);
     void on_motor3_value_verticalSlider_valueChanged(int value);
     void on_motor4_value_verticalSlider_valueChanged(int value);
-
     void motors_set_master_slider(int id);
     void set_rev(int index);
-
     void on_tab_currentChanged(int index);
     void on_reboot_pushButton_clicked();
     void timer_elapsed();
@@ -174,10 +170,8 @@ private slots:
     void serialReadyRead();
     void set_sensor_orientation(int id);
     void set_rotational_direction(int id);
-
     void realtimeDataSlot();
     void update_settings_read_delay();
-
     void live_graph_enable(int);
 
 private:
@@ -194,28 +188,22 @@ private:
     QTimer *timer;
     QTimer *plot_timer;
     QTimer *one_shot_timer;
-
     QLabel *StatusLabel;
     QProcess dfuUtilProcess;
     QString binaryPath;
     QByteArray settings_data;
-
     QTime plot_time;
-
     QByteArray motor_data;
-
     QList<double> live_values;
-
     QList<int> rc_channels;
-
 
     void refreshSerialDevices();
     void showStatusInfo(QString info);
     void display_config_scene(int rotation);
     void display_channels_scene();
     void displayVector(int direction);
-
     void state_switch(int state);
+
     int switch_state;
 
     bool checkDFU( QFile *dfuUtil );
@@ -223,13 +211,9 @@ private:
     bool settings_to_be_read;
     bool channels_to_be_read;
     bool push_pending;
-
     bool live_to_be_read;
-
     bool settings_to_be_write;
-
     bool settings_written;
-
     bool found_our_port;
     bool pulled;
     bool delay200;
