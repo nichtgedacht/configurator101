@@ -99,9 +99,22 @@ enum {
     aux3_rev = 312
 };
 
-enum { Firmware, Configuration, Motor_test, Flight_setup, Live_plots };
+enum { Firmware, Configuration, Motor_test, Flight_setup, Live_plots, suspend };
 
 enum { min = 401, max = 402 };
+
+enum {
+    acc_roll_checkBox = 501,
+    acc_nick_checkBox = 502,
+    acc_gier_checkBox = 503,
+    gy_roll_checkBox = 504,
+    gy_nick_checkBox = 505,
+    gy_gier_checkBox = 506,
+    ang_roll_checkBox = 507,
+    ang_nick_checkBox = 508,
+    ang_gier_checkBox = 509
+};
+
 
 namespace Ui {
 class MainWindow;
@@ -145,10 +158,7 @@ private slots:
     void on_motor4_value_verticalSlider_valueChanged(int value);
 
     void motors_set_master_slider(int id);
-
     void set_rev(int index);
-
-    void check_rev( int status, int func );
 
     void on_tab_currentChanged(int index);
     void on_reboot_pushButton_clicked();
@@ -165,48 +175,74 @@ private slots:
     void set_sensor_orientation(int id);
     void set_rotational_direction(int id);
 
+    void realtimeDataSlot();
+    void update_settings_read_delay();
+
+    void live_graph_enable(int);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort *serial;
     QGraphicsScene *config_scene;
     QGraphicsScene *channels_scene;
+    QGraphicsScene *plot_scene;
     QGraphicsRectItem *rectangle;
     QGraphicsEllipseItem *ellipse;
     QGraphicsTextItem *text;
     QGraphicsLineItem *line;
     QGraphicsPolygonItem *arrow;
     QTimer *timer;
+    QTimer *plot_timer;
+    QTimer *one_shot_timer;
+
     QLabel *StatusLabel;
     QProcess dfuUtilProcess;
     QString binaryPath;
     QByteArray settings_data;
 
+    QTime plot_time;
+
     QByteArray motor_data;
 
+    QList<double> live_values;
+
     QList<int> rc_channels;
+
+
     void refreshSerialDevices();
     void showStatusInfo(QString info);
     void display_config_scene(int rotation);
     void display_channels_scene();
     void displayVector(int direction);
+
+    void state_switch(int state);
+    int switch_state;
+
     bool checkDFU( QFile *dfuUtil );
     bool serial_to_be_closed;
     bool settings_to_be_read;
     bool channels_to_be_read;
+    bool push_pending;
+
+    bool live_to_be_read;
+
     bool settings_to_be_write;
+
+    bool settings_written;
+
     bool found_our_port;
     bool pulled;
-    //bool motors_to_be_write_pre_state;
+    bool delay200;
     bool motors_to_be_write;
     bool motors_receipt;
+    bool ok_push;
+
     qint64 bytes_written;
     motor motor_1;
     motor motor_2;
     motor motor_3;
     motor motor_4;
     int8_t rotational_direction;
-    int delay_counter;
-    //uint8_t rc_rev[12];
     rc_channel rc_func[13] = { {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0} };
     rc_channel rc_ch[13] = { {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}, {11, 0}, {12, 0} };
     uint16_t motor1_value = 4000;
@@ -214,6 +250,7 @@ private:
     uint16_t motor3_value = 4000;
     uint16_t motor4_value = 4000;
     int motors_write_state_counter;
+    double lastPointKey = 0;
 };
 
 #endif // MAINWINDOW_H
