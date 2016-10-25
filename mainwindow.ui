@@ -29,7 +29,7 @@
       <x>0</x>
       <y>0</y>
       <width>901</width>
-      <height>791</height>
+      <height>781</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -48,8 +48,8 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>14</x>
-        <y>16</y>
+        <x>10</x>
+        <y>10</y>
         <width>871</width>
         <height>731</height>
        </rect>
@@ -320,7 +320,7 @@
        <rect>
         <x>440</x>
         <y>110</y>
-        <width>111</width>
+        <width>121</width>
         <height>131</height>
        </rect>
       </property>
@@ -481,7 +481,7 @@
        <rect>
         <x>90</x>
         <y>390</y>
-        <width>681</width>
+        <width>691</width>
         <height>341</height>
        </rect>
       </property>
@@ -2286,17 +2286,17 @@
       <property name="geometry">
        <rect>
         <x>110</x>
-        <y>430</y>
+        <y>420</y>
         <width>781</width>
         <height>331</height>
        </rect>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>430</y>
+        <x>10</x>
+        <y>420</y>
         <width>82</width>
         <height>331</height>
        </rect>
@@ -2532,8 +2532,8 @@ background-color: rgb(255, 255, 255);</string>
    <widget class="QPushButton" name="pull_settings_pushButton">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>220</y>
+      <x>941</x>
+      <y>275</y>
       <width>201</width>
       <height>41</height>
      </rect>
@@ -2545,8 +2545,8 @@ background-color: rgb(255, 255, 255);</string>
    <widget class="QPushButton" name="push_settings_pushButton">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>300</y>
+      <x>941</x>
+      <y>358</y>
       <width>201</width>
       <height>41</height>
      </rect>
@@ -2558,8 +2558,8 @@ background-color: rgb(255, 255, 255);</string>
    <widget class="QPushButton" name="reboot_pushButton">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>460</y>
+      <x>941</x>
+      <y>690</y>
       <width>201</width>
       <height>41</height>
      </rect>
@@ -2571,14 +2571,40 @@ background-color: rgb(255, 255, 255);</string>
    <widget class="QPushButton" name="default_settings_pushButton">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>380</y>
+      <x>941</x>
+      <y>441</y>
       <width>201</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
      <string>Load Default Settings</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_settings_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>941</x>
+      <y>524</y>
+      <width>201</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Settings</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="restore_settings_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>941</x>
+      <y>607</y>
+      <width>201</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Restore Settings</string>
     </property>
    </widget>
   </widget>
@@ -2618,10 +2644,10 @@ background-color: rgb(255, 255, 255);</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="rot_dir_buttonGroup"/>
   <buttongroup name="sensor_set_buttonGroup"/>
-  <buttongroup name="rev_buttonGroup"/>
-  <buttongroup name="motors_min_max_buttonGroup"/>
   <buttongroup name="live_check_buttonGroup"/>
+  <buttongroup name="motors_min_max_buttonGroup"/>
+  <buttongroup name="rot_dir_buttonGroup"/>
+  <buttongroup name="rev_buttonGroup"/>
  </buttongroups>
 </ui>

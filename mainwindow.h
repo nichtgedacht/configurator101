@@ -115,7 +115,6 @@ enum {
     ang_gier_checkBox = 509
 };
 
-
 namespace Ui {
 class MainWindow;
 }
@@ -162,6 +161,10 @@ private slots:
     void serialPortError(QSerialPort::SerialPortError error);
     void browseFiles();
     void browse_saveFile();
+
+    void save_settings();
+    void restore_settings();
+
     void dfuFlashBinary();
     void dfuSaveBinary();
     void dfuListDevices();
@@ -204,6 +207,9 @@ private:
     void displayVector(int direction);
     void state_switch(int state);
 
+    void ui_to_settings_data();
+    bool settings_data_to_ui();
+
     int switch_state;
 
     bool checkDFU( QFile *dfuUtil );
@@ -214,6 +220,7 @@ private:
     bool live_to_be_read;
     bool settings_to_be_write;
     bool settings_written;
+    bool settings_saved;
     bool found_our_port;
     bool pulled;
     bool delay200;
