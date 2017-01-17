@@ -381,6 +381,8 @@ void MainWindow::timer_elapsed() // 100 ms period
             ui->start_bootloader_pushButton->setDisabled( true );
             ui->pull_settings_pushButton->setDisabled( true );
             ui->default_settings_pushButton->setDisabled( true );
+            ui->save_settings_pushButton->setDisabled( true );
+            ui->restore_settings_pushButton->setDisabled( true );
             ui->push_settings_pushButton->setDisabled( true );
             ui->disconnect_pushButton->setDisabled( true );
             ui->reboot_pushButton->setDisabled( true );
@@ -1004,6 +1006,8 @@ void MainWindow::on_pull_settings_pushButton_clicked()
     ui->pull_settings_pushButton->setDisabled( true );
     ui->push_settings_pushButton->setDisabled( true );
     ui->default_settings_pushButton->setDisabled( true );
+    ui->save_settings_pushButton->setDisabled( true );
+    ui->restore_settings_pushButton->setDisabled( true );
     ui->reboot_pushButton->setDisabled( true );
     ui->disconnect_pushButton->setDisabled( true );
 
@@ -1014,6 +1018,8 @@ void MainWindow::on_push_settings_pushButton_clicked()
 {
     ui->push_settings_pushButton->setDisabled( true );
     ui->default_settings_pushButton->setDisabled( true );
+    ui->save_settings_pushButton->setDisabled( true );
+    ui->restore_settings_pushButton->setDisabled( true );
     ui->reboot_pushButton->setDisabled( true );
     ui->pull_settings_pushButton->setDisabled( true );
     ui->disconnect_pushButton->setDisabled( true );

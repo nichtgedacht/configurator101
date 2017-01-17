@@ -321,7 +321,7 @@
         <x>440</x>
         <y>110</y>
         <width>121</width>
-        <height>131</height>
+        <height>121</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -2646,8 +2646,8 @@ background-color: rgb(255, 255, 255);</string>
  <buttongroups>
   <buttongroup name="sensor_set_buttonGroup"/>
   <buttongroup name="live_check_buttonGroup"/>
-  <buttongroup name="motors_min_max_buttonGroup"/>
   <buttongroup name="rot_dir_buttonGroup"/>
+  <buttongroup name="motors_min_max_buttonGroup"/>
   <buttongroup name="rev_buttonGroup"/>
  </buttongroups>
 </ui>
