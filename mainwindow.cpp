@@ -890,6 +890,8 @@ void MainWindow::ui_to_settings_data()
     ps->aspect_ratio = ui->aspect_ratio_doubleSpinBox->value();
 
     ps->receiver = ui->rx_select_comboBox->currentIndex();
+
+    ps->low_voltage = ui->low_bat_volt_doubleSpinBox->value();
 }
 
 bool MainWindow::settings_data_to_ui()
@@ -983,6 +985,8 @@ bool MainWindow::settings_data_to_ui()
             rc_func[i] = ps->rc_func[i];
             rc_ch[i] = ps->rc_ch[i];
         }
+
+        ui->low_bat_volt_doubleSpinBox->setValue(ps->low_voltage);
 
         rotational_direction = ps->motor_2.rotational_direction;
 

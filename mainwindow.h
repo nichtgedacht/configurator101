@@ -52,6 +52,10 @@ typedef struct {
     rc_channel rc_ch[13];
     uint8_t pad8;
     uint8_t receiver;
+    uint8_t pad9;
+    uint8_t pad10;
+    uint8_t pad11;
+    float low_voltage;
 } settings;
 
 
