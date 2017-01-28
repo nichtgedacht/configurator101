@@ -299,7 +299,7 @@
         <x>440</x>
         <y>110</y>
         <width>121</width>
-        <height>131</height>
+        <height>121</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -458,8 +458,8 @@
       <property name="geometry">
        <rect>
         <x>90</x>
-        <y>391</y>
-        <width>691</width>
+        <y>360</y>
+        <width>681</width>
         <height>341</height>
        </rect>
       </property>
@@ -1338,55 +1338,59 @@
       <property name="geometry">
        <rect>
         <x>90</x>
-        <y>280</y>
-        <width>411</width>
-        <height>61</height>
+        <y>290</y>
+        <width>173</width>
+        <height>26</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_31">
+      <layout class="QHBoxLayout" name="horizontalLayout_15">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_15">
-         <item>
-          <widget class="QLabel" name="label_35">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Receiver&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="rx_select_comboBox"/>
-         </item>
-        </layout>
+        <widget class="QLabel" name="label_35">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Receiver&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_30">
-         <item>
-          <widget class="QLabel" name="label_50">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Low Bat Voltage&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QDoubleSpinBox" name="low_bat_volt_doubleSpinBox">
-           <property name="decimals">
-            <number>1</number>
-           </property>
-           <property name="minimum">
-            <double>9.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>15.000000000000000</double>
-           </property>
-           <property name="singleStep">
-            <double>0.100000000000000</double>
-           </property>
-           <property name="value">
-            <double>10.500000000000000</double>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QComboBox" name="rx_select_comboBox"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>200</y>
+        <width>218</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_30">
+       <item>
+        <widget class="QLabel" name="label_50">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Low Bat Voltage&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="low_bat_volt_doubleSpinBox">
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>9.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>15.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>10.500000000000000</double>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -2679,9 +2683,9 @@ background-color: rgb(255, 255, 255);</string>
  <connections/>
  <buttongroups>
   <buttongroup name="motors_min_max_buttonGroup"/>
+  <buttongroup name="rot_dir_buttonGroup"/>
   <buttongroup name="live_check_buttonGroup"/>
   <buttongroup name="sensor_set_buttonGroup"/>
-  <buttongroup name="rot_dir_buttonGroup"/>
   <buttongroup name="rev_buttonGroup"/>
  </buttongroups>
 </ui>
