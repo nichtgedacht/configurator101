@@ -86,7 +86,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect( ui->rev_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(set_rev(int) ) );
     connect(ui->motors_min_max_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT( motors_set_master_slider(int) ) );
     connect(ui->live_check_buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT( live_graph_enable(int) ) );
-
     connect( ui->save_settings_pushButton, SIGNAL( released() ), this, SLOT( save_settings() ) );
     connect( ui->restore_settings_pushButton, SIGNAL( released() ), this, SLOT( restore_settings() ) );
 
@@ -1046,6 +1045,14 @@ void MainWindow::on_default_settings_pushButton_clicked()
     serial->write("load_defaults", 14);
     pulled = false;
     ui->push_settings_pushButton->setDisabled( true );
+}
+
+void MainWindow::on_cal_acc_pushButton_clicked()
+{
+    serial->write("cal_acc", 8);
+    serial->flush();
+    QThread::msleep(50);
+    //MainWindow::msleep(50);
 }
 
 void MainWindow::save_settings()
@@ -2085,4 +2092,3 @@ void MainWindow::display_config_scene(int rotation)
         }
     }
 }
-

@@ -160,7 +160,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-
 private slots:
     void on_connect_pushButton_clicked();
     void on_disconnect_pushButton_clicked();
@@ -168,6 +167,7 @@ private slots:
     void on_pull_settings_pushButton_clicked();
     void on_push_settings_pushButton_clicked();
     void on_default_settings_pushButton_clicked();
+    void on_cal_acc_pushButton_clicked();
     void on_rc_thrust_spinBox_valueChanged(int value);
     void on_rc_roll_spinBox_valueChanged(int value);
     void on_rc_nick_spinBox_valueChanged(int value);
@@ -194,10 +194,8 @@ private slots:
     void serialPortError(QSerialPort::SerialPortError error);
     void browseFiles();
     void browse_saveFile();
-
     void save_settings();
     void restore_settings();
-
     void dfuFlashBinary();
     void dfuSaveBinary();
     void dfuListDevices();
@@ -232,6 +230,8 @@ private:
     QByteArray motor_data;
     QList<double> live_values;
     QList<int> rc_channels;
+
+    //static void msleep(unsigned long msecs){QThread::msleep(msecs);}
 
     void refreshSerialDevices();
     void showStatusInfo(QString info);
