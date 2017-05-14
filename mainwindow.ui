@@ -458,7 +458,7 @@
       <property name="geometry">
        <rect>
         <x>90</x>
-        <y>370</y>
+        <y>380</y>
         <width>711</width>
         <height>341</height>
        </rect>
@@ -1397,6 +1397,28 @@
           <double>10.500000000000000</double>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>270</y>
+        <width>161</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_31">
+       <item>
+        <widget class="QLabel" name="label_51">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;ESC&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="esc_select_comboBox"/>
        </item>
       </layout>
      </widget>
@@ -2702,8 +2724,8 @@ background-color: rgb(255, 255, 255);</string>
  <connections/>
  <buttongroups>
   <buttongroup name="motors_min_max_buttonGroup"/>
-  <buttongroup name="rot_dir_buttonGroup"/>
   <buttongroup name="sensor_set_buttonGroup"/>
+  <buttongroup name="rot_dir_buttonGroup"/>
   <buttongroup name="live_check_buttonGroup"/>
   <buttongroup name="rev_buttonGroup"/>
  </buttongroups>

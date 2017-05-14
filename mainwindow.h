@@ -30,36 +30,6 @@ typedef struct
 
 typedef int8_t matrix[3][3];
 
-/*
-typedef struct {
-    uint8_t magic;
-    uint8_t pad1;
-    uint8_t pad2;
-    uint8_t pad3;
-    float pidvars[9];
-    float l_pidvars[9];
-    float rate[3];
-    motor motor_1;
-    motor motor_2;
-    motor motor_3;
-    motor motor_4;
-    matrix sensor_orient;
-    uint8_t pad4;
-    uint8_t pad5;
-    uint8_t pad6;
-    float aspect_ratio;
-    rc_channel rc_func[13];
-    uint8_t pad7;
-    rc_channel rc_ch[13];
-    uint8_t pad8;
-    uint8_t receiver;
-    uint8_t pad9;
-    uint8_t pad10;
-    uint8_t pad11;
-    float low_voltage;
-} settings;
-*/
-
 typedef struct {
     uint8_t magic;
     uint8_t pad1[7];    // 1 + 7 = 8
@@ -84,7 +54,11 @@ typedef struct {
     uint8_t receiver;
     int8_t pad9[7];     // 1 + 7 = 8
     float low_voltage;
-    int8_t pad10[4];     // 4 + 4 = 8
+    int8_t pad10[4];    // 4 + 4 = 8
+    int32_t acc_offset[3];
+    int8_t pad11[4];    // 3 * 4 + 4 = 16
+    uint8_t esc_mode;
+    int8_t pad12[7];    // 1 + 7 = 8
 
 } settings;
 
@@ -94,6 +68,7 @@ enum { roll, nick, gier }; // rate axis index
 enum { SBUS, SRXL };
 enum { cw_radioButton = 201, ccw_radioButton = 202};
 enum { CW = 1, CCW = -1 };
+enum { STD, ONES }; // ESC type index
 enum { r_thrust = 1,
        r_roll = 2,
        r_nick = 3,

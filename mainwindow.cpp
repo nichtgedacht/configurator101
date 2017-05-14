@@ -110,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->restore_settings_pushButton->setDisabled( true );
     ui->motors_enable_checkBox->setDisabled( true );
     ui->rx_select_comboBox->addItems(QStringList() << "SBUS" << "SRXL");
+    ui->esc_select_comboBox->addItems(QStringList() << "Standard" << "One Shot");
     ui->rev_buttonGroup->setExclusive(false);
     ui->live_check_buttonGroup->setExclusive(false);
 
@@ -354,7 +355,9 @@ void MainWindow::timer_elapsed() // 100 ms period
             {
                 ui->start_bootloader_pushButton->setDisabled( false );
                 ui->reboot_pushButton->setDisabled( false );
-                ui->motors_enable_checkBox->setDisabled( false );
+
+                ////########////
+                //ui->motors_enable_checkBox->setDisabled( false );
                 ui->disconnect_pushButton->setDisabled( false );
 
                 if ( live_to_be_read == false )
@@ -385,6 +388,10 @@ void MainWindow::timer_elapsed() // 100 ms period
             ui->push_settings_pushButton->setDisabled( true );
             ui->disconnect_pushButton->setDisabled( true );
             ui->reboot_pushButton->setDisabled( true );
+            if ( ui->motors_enable_checkBox->isChecked() )
+            {
+                ui->motors_enable_checkBox->click();
+            }
             ui->motors_enable_checkBox->setDisabled( true );
 
             if (found_our_port)
@@ -539,6 +546,8 @@ void MainWindow::on_connect_pushButton_clicked()
     serial->setParity(QSerialPort::NoParity);
     serial->setStopBits(QSerialPort::OneStop);
     serial->setFlowControl(QSerialPort::NoFlowControl);
+
+    ui->motors_enable_checkBox->setDisabled( false );
 
     state_switch(ui->tab->currentIndex());
 }
@@ -703,6 +712,12 @@ void MainWindow::on_motors_enable_checkBox_clicked(bool checked)
         ui->motor2_value_verticalSlider->setDisabled( true );
         ui->motor3_value_verticalSlider->setDisabled( true );
         ui->motor4_value_verticalSlider->setDisabled( true );
+
+        if (serial->isOpen())
+        {
+            ui->disconnect_pushButton->setDisabled( false );
+        }
+
 
     }
     else
@@ -890,6 +905,8 @@ void MainWindow::ui_to_settings_data()
 
     ps->receiver = ui->rx_select_comboBox->currentIndex();
 
+    ps->esc_mode = ui->esc_select_comboBox->currentIndex();
+
     ps->low_voltage = ui->low_bat_volt_doubleSpinBox->value();
 }
 
@@ -946,6 +963,8 @@ bool MainWindow::settings_data_to_ui()
         ui->aspect_ratio_doubleSpinBox->setValue(ps->aspect_ratio);
 
         ui->rx_select_comboBox->setCurrentIndex(ps->receiver);
+
+        ui->esc_select_comboBox->setCurrentIndex(ps->esc_mode);
 
         for(i=0; i<3; ++i)
             for(j=0; j<3; ++j)
